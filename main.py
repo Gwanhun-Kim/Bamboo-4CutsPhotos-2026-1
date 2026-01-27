@@ -73,79 +73,112 @@
 
 
 
-import os
-import time
-import subprocess
-import uuid
-import addPhotos2Frame as photoMaker
-from PIL import Image, ImageDraw, ImageFont
+# import os
+# import time
+# import subprocess
+# import uuid
+# import addPhotos2Frame as photoMaker
+# from PIL import Image, ImageDraw, ImageFont
+# import addPhotos2Frame
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
 
 
-# 파일 저장 경로
-SAVE_DIR = "Bamboo_Photos"
-TEMPLATE_PATH = "frame_template.png"  # 배경 프레임 파일명
+# # 파일 저장 경로
+# SAVE_DIR = "Bamboo_Photos"
+# TEMPLATE_PATH = "frame_template.png"  # 배경 프레임 파일명
 
-# def speak(text):
-#     """맥북 자체 음성 합성(TTS) 사용"""
-#     os.system(f'say "{text}"')
-
-
-def kill_mac_camera_process():
-    """방해되는 PTPCamera 프로세스 종료"""
-    subprocess.run(["pkill", "-9", "PTPCamera"])
-    time.sleep(0.5)
-
-# ==========================================
-# 메인 실행 함수
-# ==========================================
-def run_booth():
-    if not os.path.exists(SAVE_DIR):
-        os.makedirs(SAVE_DIR)
-
-    kill_mac_camera_process()
-
-    print("\n👋 안녕하세요! 밤부 사진관입니다.")
-    speak("안녕하세요. 밤부 사진관입니다. 촬영을 시작하시려면 엔터키를 눌러주세요.")
-    input("👉 엔터키를 누르면 촬영이 시작됩니다...")
-
-    current_photos = []
-
-    # 4컷 촬영 루프
-    for i in range(1, 5):
-        print(f"\n[{i}/4] 촬영 준비...")
-        speak(f"{i}번째 사진을 찍습니다.")
-        time.sleep(1)
-
-        # 카운트다운
-        speak("쓰리")
-        time.sleep(1)
-        speak("투")
-        time.sleep(1)
-        speak("원")
-
-        # 촬영
-        filename = f"{SAVE_DIR}/shot_{i}_{int(time.time())}.jpg"
-        if capture_photo(filename):
-            current_photos.append(filename)
-            speak("찰칵")
-        else:
-            speak("촬영 실패. 다시 시도합니다.")
-            return  # 에러 처리
-
-        time.sleep(1)  # 다음 컷 대기
+# # def speak(text):
+# #     """맥북 자체 음성 합성(TTS) 사용"""
+# #     os.system(f'say "{text}"')
 
 
+# def kill_mac_camera_process():
+#     """방해되는 PTPCamera 프로세스 종료"""
+#     subprocess.run(["pkill", "-9", "PTPCamera"])
+#     time.sleep(0.5)
 
-if __name__ == "__main__":
-    while True:
-        try:
-            run_booth()
-            # 연속 촬영을 위해 루프
-            q = input("\n🔄 다시 찍으려면 엔터, 종료하려면 'q' 입력: ")
-            if q.lower() == 'q':
-                break
-        except Exception as e:
-            print(f"오류 발생: {e}")
-            break
+# # ==========================================
+# # 메인 실행 함수
+# # ==========================================
+# def run_booth():
+#     if not os.path.exists(SAVE_DIR):
+#         os.makedirs(SAVE_DIR)
+
+#     kill_mac_camera_process()
+
+#     print("\n👋 안녕하세요! 밤부 사진관입니다.")
+#     speak("안녕하세요. 밤부 사진관입니다. 촬영을 시작하시려면 엔터키를 눌러주세요.")
+#     input("👉 엔터키를 누르면 촬영이 시작됩니다...")
+
+#     current_photos = []
+
+#     # 4컷 촬영 루프
+#     for i in range(1, 5):
+#         print(f"\n[{i}/4] 촬영 준비...")
+#         speak(f"{i}번째 사진을 찍습니다.")
+#         time.sleep(1)
+
+#         # 카운트다운
+#         speak("쓰리")
+#         time.sleep(1)
+#         speak("투")
+#         time.sleep(1)
+#         speak("원")
+
+#         # 촬영
+#         filename = f"{SAVE_DIR}/shot_{i}_{int(time.time())}.jpg"
+#         if capture_photo(filename):
+#             current_photos.append(filename)
+#             speak("찰칵")
+#         else:
+#             speak("촬영 실패. 다시 시도합니다.")
+#             return  # 에러 처리
+
+#         time.sleep(1)  # 다음 컷 대기
+
+# def getSavedFiles(SAVE_DIR):
+#     files = os.listdir(SAVE_DIR)
+#     #계속해서 더 만들어줘.
+
+# if __name__ == "__main__":
+#     while True:
+#         try:
+#             run_booth()
+#             # 연속 촬영을 위해 루프
+#             q = input("\n🔄 다시 찍으려면 엔터, 종료하려면 'q' 입력: ")
+#             if q.lower() == 'q':
+#                 break
+
+#             addPhotos2Frame.create_life4cut()
+#             '''
+#             Args:
+#                 photo_paths (list): 사진 파일 경로 4개가 담긴 리스트
+#                 frame_path (str): 프레임(배경 투명 PNG) 파일 경로
+#                 output_path (str): 결과물을 저장할 경로 (기본값: result_final.jpg)
+                
+#             Returns:
+#                 str: 성공 시 생성된 파일 경로, 실패 시 None
+#             '''
+#         except Exception as e:
+#             print(f"오류 발생: {e}")
+#             break
 
 
+
+
+
+import os, time #os와 time 모듈을 가져옵니다.
+DIR_PATH= '/Users/kimgwanhun/Desktop/Pictures/밤부/26-1/가두모집/인생네컷/photos' #DIR_PATH 변수에 디렉토리 경로 'static'을 저장합니다.
+
+pre_file = set(os.listdir(DIR_PATH)) #os.listdir(DIR_PATH)를 사용하여 'static' 디렉토리의 파일 리스트를 가져오고, 이를 set으로 변환하여 pre_file 변수에 저장합니다. set형은 중복허용이 되지 않는다는 특징이 있습니다.
+print(pre_file) # pre_file을 출력하여 초기 파일 리스트를 확인합니다.
+
+def checkNewFiles():
+    cureent_file = set(os.listdir(DIR_PATH)) # os.listdir(DIR_PATH)를 사용하여 현재 시점의 파일 리스트를 가져오고, 이를 set으로 변환하여 cureent_file 변수에 저장합니다.
+    result_diff = cureent_file - pre_file #cureent_file - pre_file은 현재 시점에서 새로 추가된 파일들의 집합을 result_diff에 저장합니다. 이 연산은 cureent_file에서 pre_file에 없는 파일들을 찾는 것을 의미합니다. 
+   
+    for file_name in result_diff:
+        print(f"새로운 파일 탐지 : {file_name} ")  #result_diff에 있는 각 파일에 대해 반복하여, 새로운 파일을 탐지하면 그 파일 이름을 출력합니다.
+    pre_file = cureent_file  #pre_file을 cureent_file로 갱신하여 다음 반복 시 현재 파일 리스트를 기준으로 비교할 수 있게 합니다.
+    print("확인!!")

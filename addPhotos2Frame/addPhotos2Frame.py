@@ -75,74 +75,93 @@
 #     create4CutPhotoImages(path2Photo)
 
 
-import os
 from PIL import Image
+import os
 
-def create4CutPhotoImages(path2Photos):
-    # 1. 현재 스크립트 파일이 있는 폴더 경로 확보
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+def create_life4cut(photo_paths, frame_path, output_path="result_final.jpg"):
+    """
+    4장의 사진 경로 리스트를 받아 인생네컷을 생성하는 함수
     
-    # 사진이 4장이 아니라면 종료
-    if len(path2Photos) != 4:
-        print(f"에러: 4장의 사진이 필요합니다. (현재 {len(path2Photos)}장)")
-        return
+    Args:
+        photo_paths (list): 사진 파일 경로 4개가 담긴 리스트
+        frame_path (str): 프레임(배경 투명 PNG) 파일 경로
+        output_path (str): 결과물을 저장할 경로 (기본값: result_final.jpg)
+        
+    Returns:
+        str: 성공 시 생성된 파일 경로, 실패 시 None
+    """
+    
+    # 1. 기초 유효성 검사
+    if len(photo_paths) != 4:
+        print(f"[Error] 사진은 정확히 4장이 필요합니다. (입력됨: {len(photo_paths)}장)")
+        return None
+        
+    if not os.path.exists(frame_path):
+        print(f"[Error] 프레임 파일을 찾을 수 없습니다: {frame_path}")
+        return None
 
-    # 배경 캔버스 생성 (1200x1800)
+    # 2. 캔버스 및 상수 설정
     canvas = Image.new("RGB", (1200, 1800), "white")
+    photos_positions = [(87, 61), (88, 432), (88, 803), (88, 1173)]
     
-    # 좌표 및 설정
-    photosPositions = [(87, 61), (88, 432), (88, 803), (88, 1173)]
     IMG_WIDTH = 438
     IMG_HEIGHT = 331
     OFFSET_X = -5
     OFFSET_Y = -5
+    RIGHT_STRIP_GAP = 603
 
-    for i, (x, y) in enumerate(photosPositions):
-        # 개별 사진의 절대 경로 생성
-        photo_path = os.path.join(base_dir, path2Photos[i])
+    # 3. 사진 합성 루프
+    for i, photo_path in enumerate(photo_paths):
+        if i >= 4: break # 안전장치
+        
+        x, y = photos_positions[i]
         
         try:
-            targetImg = Image.open(photo_path).convert("RGB")
-            targetImg = targetImg.resize((IMG_WIDTH, IMG_HEIGHT))
+            target_img = Image.open(photo_path)
+            target_img = target_img.resize((IMG_WIDTH, IMG_HEIGHT))
 
             final_x = x + OFFSET_X
             final_y = y + OFFSET_Y
 
-            # 왼쪽에 사진 넣기
-            canvas.paste(targetImg, (final_x, final_y))
-            # 오른쪽에 사진 넣기
-            canvas.paste(targetImg, (final_x + 603, final_y))
-            print(f"✅ 사진 합성 완료: {path2Photos[i]}")
+            # 왼쪽 & 오른쪽 배치
+            canvas.paste(target_img, (final_x, final_y))
+            canvas.paste(target_img, (final_x + RIGHT_STRIP_GAP, final_y))
 
         except FileNotFoundError:
-            print(f"❌ 파일을 찾을 수 없음: {photo_path}")
+            print(f"[Warning] 사진 파일을 찾을 수 없습니다: {photo_path}. 해당 칸은 비워둡니다.")
+            continue
+        except Exception as e:
+            print(f"[Error] 이미지 처리 중 오류 발생 ({photo_path}): {e}")
             continue
 
-    # 2. 프레임 합성
-    # 스크립트와 같은 폴더에 있다고 가정
-    frameFileName = "밤부_인생네컷_최종mk3.png" 
-    frame_path = os.path.join(base_dir, frameFileName)
-
+    # 4. 프레임 덮어쓰기
     try:
-        frameImg = Image.open(frame_path).convert("RGBA")
-        if frameImg.size != canvas.size:
-            frameImg = frameImg.resize(canvas.size)
-        
-        # 프레임을 캔버스 위에 덮어쓰기
-        canvas.paste(frameImg, (0, 0), frameImg)
-        print(f"✅ 프레임 합성 완료: {frameFileName}")
+        frame_img = Image.open(frame_path).convert("RGBA")
+        if frame_img.size != canvas.size:
+            frame_img = frame_img.resize(canvas.size)
 
-    except FileNotFoundError:
-        print(f"⚠️ 프레임 파일을 찾을 수 없습니다: {frame_path}")
+        canvas.paste(frame_img, (0, 0), frame_img)
 
-    # 3. 결과 저장
-    outputFileName = "result_addPhotos2Frame.jpg"
-    output_path = os.path.join(base_dir, outputFileName)
-    canvas.save(output_path, quality=95)
-    print(f"\n🎉 최종 결과물이 저장되었습니다: {output_path}")
+    except Exception as e:
+        print(f"[Error] 프레임 합성 실패: {e}")
+        return None
 
+    # 5. 저장
+    try:
+        canvas.save(output_path)
+        print(f"✅ 인생네컷 생성 완료: {output_path}")
+        return output_path
+    except Exception as e:
+        print(f"[Error] 파일 저장 실패: {e}")
+        return None
 
+# 테스트용 코드 (이 파일만 직접 실행했을 때만 작동)
 if __name__ == "__main__":
-    # 파일 이름들 (이 파일들이 스크립트와 같은 폴더에 있어야 합니다)
-    photos = ["예시사진1.jpg", "예시사진2.jpg", "예시사진3.jpg", "예시사진4.jpg"]
-    create4CutPhotoImages(photos)
+    # 테스트 데이터 예시
+    sample_photos = [
+        "img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"
+    ]
+    sample_frame = "frame.png"
+    
+    # 함수 호출 테스트
+    create_life4cut(sample_photos, sample_frame, "test_result.jpg")
