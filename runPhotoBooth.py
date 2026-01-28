@@ -1,14 +1,13 @@
 import os
 import time
 import subprocess
-from datetime import datetime  # 시간 정보 획득을 위해 추가
+from datetime import datetime
 from PIL import Image
 
 TEST_MODE = True
-BASE_SAVE_DIR = "Bamboo_Studio" # 메인 저장 폴더
+BASE_SAVE_DIR = "Bamboo_Studio" 
 
 def kill_mac_camera_process():
-    """macOS 카메라 점유 프로세스 종료"""
     try:
         subprocess.run(["pkill", "-9", "PTPCamera"], stderr=subprocess.DEVNULL)
         time.sleep(0.5)
@@ -16,10 +15,10 @@ def kill_mac_camera_process():
         pass
 
 def capture_photo(filename):
-    """사진 촬영 함수"""
     if TEST_MODE:
         time.sleep(0.5)
-        dummy = Image.new('RGB', (3000, 2000), color=(100, 150, 255)) # 테스트용 푸른색
+        # 테스트 모드 시 구분하기 쉽게 촬영 번호를 텍스트로 넣어도 좋지만, 일단 기본 로직 유지
+        dummy = Image.new('RGB', (3000, 2000), color=(100, 150, 255))
         dummy.save(filename)
         return True
     else:
@@ -32,41 +31,34 @@ def capture_photo(filename):
             return False
 
 def run_booth():
-    # 1. 현재 시간을 기준으로 고유한 세션 폴더명 생성 (예: 20260127_180530)
+    """촬영을 수행하고 저장된 파일 경로 리스트를 반환합니다."""
     session_name = datetime.now().strftime("%Y%m%d_%H%M%S")
     session_path = os.path.join(BASE_SAVE_DIR, session_name)
 
-    # 2. 폴더가 없으면 생성
     if not os.path.exists(session_path):
         os.makedirs(session_path)
-        print(f"📁 새 폴더 생성됨: {session_path}")
 
     kill_mac_camera_process()
 
-    print(f"\n📸 밤부 사진관 [{session_name}] 세션을 시작합니다.")
+    print(f"\n📸 밤부 사진관 세션 시작: {session_name}")
     input("👉 엔터키를 누르면 4컷 촬영이 시작됩니다...")
 
     current_photos = []
 
     for i in range(1, 5):
-        print(f"\n[{i}/4] 준비하세요!")
-        for countdown in range(8, 0, -1):
+        print(f"\n[{i}/4] {i}번째 컷 준비!")
+        for countdown in range(3, 0, -1): # 테스트를 위해 3초로 단축 (실제 환경에선 8초 권장)
             print(f"{countdown}...")
             time.sleep(1)
 
-        # 3. 해당 세션 폴더 안에 파일 저장
         filename = os.path.join(session_path, f"shot_{i}.jpg")
         
         if capture_photo(filename):
-            print(f"✨ 찰칵! {filename} 저장 완료")
+            print(f"✨ 찰칵! 저장 완료")
             current_photos.append(filename)
         else:
-            print("⚠️ 촬영 실패. 다음 컷으로 넘어갑니다.")
+            print(f"⚠️ {i}번째 촬영 실패.")
         
-        time.sleep(1)
+        time.sleep(0.5)
 
-    print(f"\n✅ 촬영 종료. 총 {len(current_photos)}장의 사진이 {session_path}에 저장되었습니다.")
-    return current_photos
-
-if __name__ == "__main__":
-    run_booth()
+    return current_photos # 중요: 촬영된 4장의 경로 리스트를 반환

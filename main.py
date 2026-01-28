@@ -77,7 +77,6 @@
 # import time
 # import subprocess
 # import uuid
-# import addPhotos2Frame as photoMaker
 # from PIL import Image, ImageDraw, ImageFont
 # import addPhotos2Frame
 # from watchdog.observers import Observer
@@ -93,49 +92,7 @@
 # #     os.system(f'say "{text}"')
 
 
-# def kill_mac_camera_process():
-#     """방해되는 PTPCamera 프로세스 종료"""
-#     subprocess.run(["pkill", "-9", "PTPCamera"])
-#     time.sleep(0.5)
 
-# # ==========================================
-# # 메인 실행 함수
-# # ==========================================
-# def run_booth():
-#     if not os.path.exists(SAVE_DIR):
-#         os.makedirs(SAVE_DIR)
-
-#     kill_mac_camera_process()
-
-#     print("\n👋 안녕하세요! 밤부 사진관입니다.")
-#     speak("안녕하세요. 밤부 사진관입니다. 촬영을 시작하시려면 엔터키를 눌러주세요.")
-#     input("👉 엔터키를 누르면 촬영이 시작됩니다...")
-
-#     current_photos = []
-
-#     # 4컷 촬영 루프
-#     for i in range(1, 5):
-#         print(f"\n[{i}/4] 촬영 준비...")
-#         speak(f"{i}번째 사진을 찍습니다.")
-#         time.sleep(1)
-
-#         # 카운트다운
-#         speak("쓰리")
-#         time.sleep(1)
-#         speak("투")
-#         time.sleep(1)
-#         speak("원")
-
-#         # 촬영
-#         filename = f"{SAVE_DIR}/shot_{i}_{int(time.time())}.jpg"
-#         if capture_photo(filename):
-#             current_photos.append(filename)
-#             speak("찰칵")
-#         else:
-#             speak("촬영 실패. 다시 시도합니다.")
-#             return  # 에러 처리
-
-#         time.sleep(1)  # 다음 컷 대기
 
 # def getSavedFiles(SAVE_DIR):
 #     files = os.listdir(SAVE_DIR)
@@ -168,17 +125,45 @@
 
 
 
-import os, time #os와 time 모듈을 가져옵니다.
-DIR_PATH= '/Users/kimgwanhun/Desktop/Pictures/밤부/26-1/가두모집/인생네컷/photos' #DIR_PATH 변수에 디렉토리 경로 'static'을 저장합니다.
 
-pre_file = set(os.listdir(DIR_PATH)) #os.listdir(DIR_PATH)를 사용하여 'static' 디렉토리의 파일 리스트를 가져오고, 이를 set으로 변환하여 pre_file 변수에 저장합니다. set형은 중복허용이 되지 않는다는 특징이 있습니다.
-print(pre_file) # pre_file을 출력하여 초기 파일 리스트를 확인합니다.
+# import checkNewFiles
+# import addPhotos2Frame
+# import runPhotoBooth
+# from PIL import Image, ImageDraw, ImageFont
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
 
-def checkNewFiles():
-    cureent_file = set(os.listdir(DIR_PATH)) # os.listdir(DIR_PATH)를 사용하여 현재 시점의 파일 리스트를 가져오고, 이를 set으로 변환하여 cureent_file 변수에 저장합니다.
-    result_diff = cureent_file - pre_file #cureent_file - pre_file은 현재 시점에서 새로 추가된 파일들의 집합을 result_diff에 저장합니다. 이 연산은 cureent_file에서 pre_file에 없는 파일들을 찾는 것을 의미합니다. 
-   
-    for file_name in result_diff:
-        print(f"새로운 파일 탐지 : {file_name} ")  #result_diff에 있는 각 파일에 대해 반복하여, 새로운 파일을 탐지하면 그 파일 이름을 출력합니다.
-    pre_file = cureent_file  #pre_file을 cureent_file로 갱신하여 다음 반복 시 현재 파일 리스트를 기준으로 비교할 수 있게 합니다.
-    print("확인!!")
+
+import runPhotoBooth
+import addPhotos2Frame
+
+def main():
+    print("====================================")
+    print("   Bamboo 4-Cuts System v1.0")
+    print("====================================")
+
+    while True:
+        # 1. 촬영 수행 (파일 경로 리스트를 받아옴)
+        photo_paths = runPhotoBooth.run_booth()
+
+        # 2. 사진이 정상적으로 4장 찍혔는지 확인
+        if len(photo_paths) == 4:
+            print("\n🎨 모든 사진이 준비되었습니다. 합성을 시작합니다...")
+            
+            # 3. addPhotos2Frame 모듈로 경로 전달
+            # 프레임 경로는 assets 폴더 내의 파일을 지정하세요.
+            frame_image = "assets/밤부 인생네컷 프레임 mk22.png"
+            result_path = addPhotos2Frame.create_life4cut(photo_paths, frame_image, output_path="result_final.jpg")
+            
+            print(f"✅ 완성! 결과물 경로: {result_path}")
+        else:
+            print(f"\n❌ 촬영이 정상적으로 완료되지 않았습니다. (확보된 사진: {len(photo_paths)}장)")
+
+        # 4. 반복 여부 확인
+        retry = input("\n다시 촬영하시겠습니까? (y/n): ")
+        if retry.lower() != 'y':
+            print("프로그램을 종료합니다.")
+            break
+
+if __name__ == "__main__":
+    main()
