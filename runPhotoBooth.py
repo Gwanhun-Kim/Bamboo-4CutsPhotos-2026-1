@@ -4,15 +4,20 @@ import subprocess
 from datetime import datetime
 from PIL import Image
 
-TEST_MODE = True
+TEST_MODE = False  # 테스트 모드 설정
 BASE_SAVE_DIR = "Bamboo_Studio" 
 
 def kill_mac_camera_process():
-    try:
-        subprocess.run(["pkill", "-9", "PTPCamera"], stderr=subprocess.DEVNULL)
-        time.sleep(0.5)
-    except Exception:
-        pass
+    """macOS 카메라 점유 프로세스를 반복해서 확실히 종료"""
+    print("🔄 카메라 권한 확인 중...")
+    processes = ["PTPCamera", "Photos", "Image Capture"]
+    for proc in processes:
+        try:
+            # -9 옵션으로 강제 종료하고, 모든 사용자 프로세스(-a) 대상
+            subprocess.run(["pkill", "-9", "-a", proc], stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+    time.sleep(1) # 프로세스가 완전히 죽고 포트가 풀릴 때까지 대기
 
 def capture_photo(filename):
     if TEST_MODE:
