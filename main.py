@@ -137,7 +137,10 @@
 import runPhotoBooth
 import addPhotos2Frame
 
+
+
 def main():
+    print(dir(addPhotos2Frame)) # addPhotos2Frame 모듈 안에 무엇이 있는지 출력
     print("====================================")
     print("   Bamboo 4-Cuts System v1.0")
     print("====================================")
@@ -152,8 +155,8 @@ def main():
             
             # 3. addPhotos2Frame 모듈로 경로 전달
             # 프레임 경로는 assets 폴더 내의 파일을 지정하세요.
-            frame_image = "assets/밤부 인생네컷 프레임 mk22.png"
-            result_path = addPhotos2Frame.create_life4cut(photo_paths, frame_image, output_path="result_final.jpg")
+            frame_image = "assets/frame.png"
+            result_path = addPhotos2Frame.create_life4cut(photo_paths, frame_image, "result_final.jpg")
             
             print(f"✅ 완성! 결과물 경로: {result_path}")
         else:
