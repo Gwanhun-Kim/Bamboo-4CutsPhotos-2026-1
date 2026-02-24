@@ -133,6 +133,7 @@ class BambooApp(ctk.CTk):
             self.log("🔴 중단됨")
 
     def main_process_thread(self):
+        # FaceTime 촬영 시퀀스
         if self.cam_var.get() == "FaceTime":
             for i in range(TOTAL_SHOTS):
                 if not self.is_monitoring: return
@@ -143,10 +144,8 @@ class BambooApp(ctk.CTk):
                 if self.current_frame is not None:
                     filename = f"FaceTime_{datetime.now().strftime('%H%M%S')}.jpg"
                     filepath = os.path.join(WATCH_DIR, filename)
-                    # 저장 시 좌우 반전 원복
                     cv2.imwrite(filepath, cv2.flip(self.current_frame, 1)) 
                     self.log(f"✅ {i+1}/4 촬영 완료!")
-                    
                     current_count = i + 1
                     self.after(0, lambda c=current_count: self.progress_label.configure(text=f"{c} / {TOTAL_SHOTS}"))
             
@@ -156,10 +155,8 @@ class BambooApp(ctk.CTk):
                 files.sort(key=os.path.getmtime)
                 new_files = files[self.initial_count:]
                 
-                self.after(0, lambda n=len(new_files): self.progress_label.configure(text=f"{n} / {TOTAL_SHOTS}"))
-                
                 if len(new_files) >= TOTAL_SHOTS:
-                    self.log("🚀 프로세싱 시작... (미리보기 일시정지)")
+                    self.log("🚀 프로세싱 시작...")
                     self.is_previewing = False
                     time.sleep(2.0)
                     
@@ -174,13 +171,16 @@ class BambooApp(ctk.CTk):
                     out_path = os.path.join(team_raw_folder, f"Result_{self.user_name}_{now_str}.jpg")
                     addPhotos2Frame.create_bamboo_life4cut(source_photos, FRAME_PATH, out_path, CLOUD_LINK)
                     
+                    # --- [추가] CP1500 자동 인쇄 명령 ---
+                    self.log(f"🖨️ {self.user_name}님 사진 출력 중...")
+                    os.system(f"lpr -P Canon_CP1500 -o media=Postcard -o fit-to-page '{out_path}'")
+                    # ---------------------------------
+
                     zip_name = f"{self.user_name}_{now_str}.zip"
                     zip_path = os.path.join(CLOUD_ZIP_DIR, zip_name)
-                    os.system(f'zip -P "{self.user_pw}" -j "{zip_path}" "{team_raw_folder}"/*')
+                    os.system(f'cd "{team_raw_folder}" && zip -P "{self.user_pw}" -j "{zip_path}" ./*')
 
-                    self.log(f"🔒 압축 완료: {zip_name}")
-                    os.system(f"open {CLOUD_ZIP_DIR}")
-                    
+                    self.log(f"🔒 압축 완료 및 세션 종료")
                     self.is_monitoring = False
                     self.is_previewing = True
                     self.after(0, self.reset_ui_after_session)
